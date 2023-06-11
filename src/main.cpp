@@ -1,3 +1,5 @@
+#include "datapoint.h"
+
 #include <iostream>
 #include <list>
 #include <vector>
@@ -5,6 +7,8 @@
 #include <random>
 #include <string>
 #include <vector>
+#include <fstream>
+#include <sstream>
 
 using namespace std;
 
@@ -163,30 +167,42 @@ void BackwardElimination(int count) {
     cout << "}, which has an accuracy of " << globalAccuracy << "%" << endl;
 }
 
-int main () {
-    int input, count;
-    cout << "Welcome to William Huang's Feature Selection Algorithm." << endl << endl;
-    cout << "Please enter total number of features: ";
-    cin >> count;
+// int main () {
+//     int input, count;
+//     cout << "Welcome to William Huang's Feature Selection Algorithm." << endl << endl;
+//     cout << "Please enter total number of features: ";
+//     cin >> count;
 
-    cout << endl << endl;
-    cout << "Type the number of the algorithm you want to run" << endl << endl;
-    cout << "1.   Forward Selection" << endl;
-    cout << "2.   Backward Elimination" << endl;
+//     cout << endl << endl;
+//     cout << "Type the number of the algorithm you want to run" << endl << endl;
+//     cout << "1.   Forward Selection" << endl;
+//     cout << "2.   Backward Elimination" << endl;
 
-    cin >> input;
+//     cin >> input;
 
-    switch(input) {
-        case 1:
-            ForwardSelection(count);
-            break;
-        case 2:
-            BackwardElimination(count);
-            break;
-        default:
-            cout << "Input Error" << endl;
-            break;
+//     switch(input) {
+//         case 1:
+//             ForwardSelection(count);
+//             break;
+//         case 2:
+//             BackwardElimination(count);
+//             break;
+//         default:
+//             cout << "Input Error" << endl;
+//             break;
+//     }
+
+//     cout << "****END****";
+// }
+
+int main() {
+    vector<DataPoint> vec;
+    fstream file("../dataset_test.txt");
+    string input;
+    string output;
+    while (getline(file, input)) {
+        vec.push_back(DataPoint(input));
     }
-
-    cout << "****END****";
+    
+    cout << "Done";
 }
