@@ -1,14 +1,10 @@
-#include "datapoint.h"
+#include "featureSelector.h"
 
 #include <iostream>
 #include <list>
 #include <vector>
 #include <stdlib.h>
 #include <random>
-#include <string>
-#include <vector>
-#include <fstream>
-#include <sstream>
 
 using namespace std;
 
@@ -192,17 +188,9 @@ void BackwardElimination(int count) {
 //             break;
 //     }
 
-//     cout << "****END****";
-// }
-
 int main() {
-    vector<DataPoint> vec;
-    fstream file("../dataset_test.txt");
-    string input;
-    string output;
-    while (getline(file, input)) {
-        vec.push_back(DataPoint(input));
-    }
+    FeatureSelector f1;
+    f1.Start();
     
     cout << "Done";
 }
