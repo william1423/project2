@@ -11,6 +11,7 @@ class DataPoint {
     public:
         DataPoint(string input);
         int getClassName();
+        float getFeatureVal(int input);
     private:
         int className;
         vector<float> features;

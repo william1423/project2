@@ -5,10 +5,9 @@ DataPoint::DataPoint(string input) {
     istringstream iss(input);
     string cur;
     float convert;
-    int count = 0;
-    while (iss) {
-        iss >> cur;
-        if (count == 0) {
+    bool first = true;
+    while (iss >> cur) {
+        if (first == true) {
             if (stof(cur) == 1) {
                this->className = 1; 
             }
@@ -19,15 +18,18 @@ DataPoint::DataPoint(string input) {
                 cout << "Class error" << endl;
                 break;
             }
+            first = false;
         }
-        else if (count <= 10) {
+        else {
             this->features.push_back(stof(cur));
         }
-        count++;
-
     }
 }
 
 int DataPoint::getClassName() {
     return this->className;
+}
+
+float DataPoint::getFeatureVal(int input) {
+    return this->features[input];
 }

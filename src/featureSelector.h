@@ -8,11 +8,12 @@
 class FeatureSelector {
     public:
         void Start();
-        bool NearestNeighbor();
     private:
         vector<DataPoint> vec;
         vector<int> selectedFeatures;
         void ParseData(string path);
+        bool NearestNeighborFeatures();
+        float getEuclideanDistance(DataPoint input, DataPoint data);
 };
 
 #endif
