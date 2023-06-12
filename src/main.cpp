@@ -16,71 +16,7 @@ float randEval () {
     return value;
 }
 
-void ForwardSelection (int count) {
-    list<int> features;
-    float globalAccuracy = 50.0; //default starting eval is 50% just to make things smoother
-    float localAccuracy;
-    vector<int> path;
-    vector<int> optimalPath;
 
-    for(int i = 1; i <= count; i++) {
-        features.push_back(i);
-    }
-    cout << endl;
-    cout << "Beginning search. (accuracy of a set with no features is set at 50%)" << endl << endl;
-
-    int position = 0;
-    int pushPosition = 0;
-    float cur;
-    list<int>::iterator it = features.begin();
-    list<int>::iterator remove;
-
-    while (features.size()) {
-        it = features.begin();
-        localAccuracy = 0;
-
-        while (it != features.end()) {
-            cur = randEval();
-
-            cout << "   Using feature(s) {" << (*it);
-            for(int i = path.size() - 1; i >= 0; i--) {
-                cout  << ", " << path[i];
-            }
-            cout <<  "} accuracy is " << cur << "%" << endl;
-
-            if (cur > localAccuracy) {
-                localAccuracy = cur;
-                remove = it;
-            }
-            it++;
-        }
-
-        path.push_back((*remove));
-        features.erase(remove);
-
-        if (localAccuracy > globalAccuracy) {
-            globalAccuracy = localAccuracy;
-            optimalPath = path;
-        }
-
-        cout << endl;
-        cout << "Feature set {";
-        for(int i = path.size() - 1; i > 0; i--) {
-            cout  << path[i] << ", ";
-        }
-        cout << path[0];
-        cout << "} was best, accuracy is " << localAccuracy << "%";
-        if (localAccuracy < globalAccuracy) {
-            cout << " (Warning: Accuracy has decreased) from overall best set";
-        }
-        cout << endl << endl;
-    }
-    cout << "Finished Search!! The best feature subset is {";
-    for(int i = optimalPath.size() - 1; i > 0; i--) {
-            cout  << optimalPath[i] << ", ";
-        }
-    cout << optimalPath[0] << "}, which has an accuracy of " << globalAccuracy << "%" << endl;   
-}
 
 void BackwardElimination(int count) {
     list<int> features;

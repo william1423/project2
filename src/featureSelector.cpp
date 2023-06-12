@@ -9,14 +9,82 @@
 
 using namespace std;
 
+void FeatureSelector::ForwardSelection () {
+    float globalAccuracy = 0.5; //default starting eval is 50% just to make things smoother
+    float localAccuracy;
+    vector<int> optimalPath;
+
+    cout << endl;
+    cout << "Beginning search. (accuracy of a set with no features is set at 50%)" << endl << endl;
+
+    int position = 0;
+    int pushPosition = 0;
+    float cur;
+    list<int>::iterator it = this->remainingFeatures.begin();
+    list<int>::iterator remove;
+
+    while (this->remainingFeatures.size()) {
+        it = this->remainingFeatures.begin();
+        localAccuracy = 0;
+
+        while (it != this->remainingFeatures.end()) {
+            //cur = randEval();
+            this->newFeature = (*it);
+            cur = this->Validate();
+
+            cout << "   Using feature(s) {" << (*it);
+            for(int i = this->path.size() - 1; i >= 0; i--) {
+                cout  << ", " << this->path[i];
+            }
+            cout <<  "} accuracy is " << cur << endl;
+
+            if (cur > localAccuracy) {
+                localAccuracy = cur;
+                remove = it;
+            }
+            it++;
+        }
+
+        this->path.push_back((*remove));
+        this->remainingFeatures.erase(remove);
+
+        if (localAccuracy > globalAccuracy) {
+            globalAccuracy = localAccuracy;
+            optimalPath = this->path;
+        }
+
+        cout << endl;
+        cout << "Feature set {";
+        for(int i = this->path.size() - 1; i > 0; i--) {
+            cout  << this->path[i] << ", ";
+        }
+        cout << this->path[0];
+        cout << "} was best, accuracy is " << localAccuracy;
+        if (localAccuracy < globalAccuracy) {
+            cout << " (Warning: Accuracy has decreased) from overall best set";
+        }
+        cout << endl << endl;
+    }
+    cout << "Finished Search!! The best feature subset is {";
+    for(int i = optimalPath.size() - 1; i > 0; i--) {
+            cout  << optimalPath[i] << ", ";
+        }
+    cout << optimalPath[0] << "}, which has an accuracy of " << globalAccuracy << endl;   
+}
+
 void FeatureSelector::Start(){
-    // string input;
-    // cout << "Enter filepath: ";
-    // cin >> input;
-    // this->ParseData(input);
-    this->Train("../dataset_large.txt");
-    this->NearestNeighborFeatures();
-    this->Validate();
+    string input;
+    cout << "Enter filepath: ";
+    cin >> input;
+    cin.ignore();
+    input = "../" + input;
+
+    this->Train(input);
+    for (int i = 1; i <= this->vec[0].getVectorSize(); i++) {
+        this->remainingFeatures.push_back(i);
+    }
+    // this->NearestNeighborFeatures();
+    this->ForwardSelection();
 }
 
 void FeatureSelector::Train(string path) {
@@ -118,7 +186,7 @@ bool FeatureSelector::NearestNeighborFeatures() {
             duplicate = true;
         }
         else {
-            this->selectedFeatures.push_back(select - 1);
+            this->remainingFeatures.push_back(select - 1);
             chosen.insert(select);
         }
     }
@@ -132,16 +200,15 @@ bool FeatureSelector::NearestNeighborFeatures() {
 
 float FeatureSelector::getEuclideanDistance(DataPoint input, DataPoint data) {
     float sum = 0;
-    if (this->selectedFeatures.size() == 0) {
-        cout << "ERROR: no selected features";
-        return -1;
-    }
+    // if (this->remainingFeatures.size() == 0) {
+    //     cout << "ERROR: no selected features";
+    //     return -1;
+    // }
 
-    int featureNum = -1;
-    for (int i = 0; i < this->selectedFeatures.size(); i++) {
-        featureNum = this->selectedFeatures[i];
-        sum += pow((input.getFeatureVal(featureNum) - data.getFeatureVal(featureNum)), 2);
+    for (int i = 0; i < this->path.size(); i++) {
+        sum += pow((input.getFeatureVal(i) - data.getFeatureVal(i)), 2);
     }
+    sum += pow((input.getFeatureVal(this->newFeature) - data.getFeatureVal(this->newFeature)), 2);
     return sqrt(sum);
 }
 
@@ -178,7 +245,7 @@ int FeatureSelector::TestOption1(int vecIndex, DataPoint testPoint) {
     
 }
 
-void FeatureSelector::Validate() {
+float FeatureSelector::Validate() {
     float numCorrect = 0;
 
     for (int i = 0; i < this->vec.size(); i++) {
@@ -187,8 +254,9 @@ void FeatureSelector::Validate() {
             numCorrect += 1;
         }
     }
-
-    cout << "Accuracy: " << numCorrect / this->vec.size() << endl; 
+    float result = numCorrect / this->vec.size();
+    // cout << "Accuracy: " << result << endl; 
+    return result;
 }
 
 
