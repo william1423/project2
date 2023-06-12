@@ -11,7 +11,8 @@ class FeatureSelector {
     private:
         vector<DataPoint> vec;
         vector<int> selectedFeatures;
-        void ParseData(string path);
+        void Train(string path);
+        int Test();
         bool NearestNeighborFeatures();
         float getEuclideanDistance(DataPoint input, DataPoint data);
 };

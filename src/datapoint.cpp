@@ -2,6 +2,7 @@
 #include <sstream>
 
 DataPoint::DataPoint(string input) {
+    this->preParsedForm = input;
     istringstream iss(input);
     string cur;
     float convert;
@@ -32,4 +33,8 @@ int DataPoint::getClassName() {
 
 float DataPoint::getFeatureVal(int input) {
     return this->features[input];
+}
+
+string DataPoint::getPreParsedForm() {
+    return this->preParsedForm;
 }

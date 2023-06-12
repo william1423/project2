@@ -12,10 +12,11 @@ class DataPoint {
         DataPoint(string input);
         int getClassName();
         float getFeatureVal(int input);
+        string getPreParsedForm();
     private:
         int className;
         vector<float> features;
-        
+        string preParsedForm;
 };
 
 #endif
