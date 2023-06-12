@@ -38,3 +38,7 @@ float DataPoint::getFeatureVal(int input) {
 string DataPoint::getPreParsedForm() {
     return this->preParsedForm;
 }
+
+int DataPoint::getVectorSize() {
+    return this->features.size();
+}

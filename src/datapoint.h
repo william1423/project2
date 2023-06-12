@@ -13,6 +13,7 @@ class DataPoint {
         int getClassName();
         float getFeatureVal(int input);
         string getPreParsedForm();
+        int getVectorSize();
     private:
         int className;
         vector<float> features;

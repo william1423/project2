@@ -14,11 +14,9 @@ void FeatureSelector::Start(){
     // cout << "Enter filepath: ";
     // cin >> input;
     // this->ParseData(input);
-    this->Train("../dataset_test.txt");
+    this->Train("../dataset_large.txt");
     this->NearestNeighborFeatures();
-    int result = this->Test();
-    cout << "Class is " << result << endl;
-    //using index = 1, or 2.0000000e+000  4.5426593e+000  2.5859775e+000  4.1604586e+000  3.4542063e+000  4.4436954e+000  4.0238492e+000  3.1987725e+000  2.9734490e+000  2.6177713e+000  1.6957015e+000
+    this->Validate();
 }
 
 void FeatureSelector::Train(string path) {
@@ -54,10 +52,19 @@ int FeatureSelector::Test() {
             cin >> vecIndex;
             cout << endl;
         }
+
         DataPoint testPoint(this->vec[vecIndex].getPreParsedForm());
-        min = this->getEuclideanDistance(testPoint, this->vec[0]);
-        testClass = this->vec[0].getClassName();
-        for (int i = 1; i < this->vec.size(); i++) {
+
+        if(vecIndex != 0) {
+            min = this->getEuclideanDistance(testPoint, this->vec[0]);
+            testClass = this->vec[0].getClassName();
+        }
+        else {
+            min = this->getEuclideanDistance(testPoint, this->vec[1]);
+            testClass = this->vec[1].getClassName();
+        }
+
+        for (int i = 0; i < this->vec.size(); i++) {
             if (i == vecIndex) {
                 continue;
             }
@@ -103,8 +110,8 @@ bool FeatureSelector::NearestNeighborFeatures() {
 
     while (iss >> cur) {
         select = stoi(cur);
-        if (select < 1 || select > 10) {
-            cout << "ERROR: An entered feature(s) is outside the range of 1 to 10" << endl;
+        if (select < 1 || select > this->vec[0].getVectorSize()) {
+            cout << "ERROR: An entered feature(s) is outside the range of 1 to " << this->vec[0].getVectorSize() << endl;
             return false;
         }
         else if (chosen.find(select) != chosen.end()){
@@ -138,6 +145,50 @@ float FeatureSelector::getEuclideanDistance(DataPoint input, DataPoint data) {
     return sqrt(sum);
 }
 
+int FeatureSelector::TestOption1(int vecIndex, DataPoint testPoint) {
+    float min;
+    int testClass = -1;
+    float cur;
 
+    if (this->vec.size() == 1) {
+        cout << "Cannot test with option 1 when there is only one datapoint in training data" << endl;
+        return -1;
+    }
+
+    if(vecIndex != 0) {
+        min = this->getEuclideanDistance(testPoint, this->vec[0]);
+        testClass = this->vec[0].getClassName();
+    }
+    else {
+        min = this->getEuclideanDistance(testPoint, this->vec[1]);
+        testClass = this->vec[1].getClassName();
+    }
+    
+    for (int i = 0; i < this->vec.size(); i++) {
+        if (i == vecIndex) {
+            continue;
+        }
+        cur = this->getEuclideanDistance(testPoint, this->vec[i]);
+        if (cur < min) {
+            min = cur;
+            testClass = this->vec[i].getClassName();
+        }
+    }
+    return testClass;
+    
+}
+
+void FeatureSelector::Validate() {
+    float numCorrect = 0;
+
+    for (int i = 0; i < this->vec.size(); i++) {
+        DataPoint testPoint(this->vec[i].getPreParsedForm());
+        if (this->TestOption1(i, testPoint) == testPoint.getClassName()) {
+            numCorrect += 1;
+        }
+    }
+
+    cout << "Accuracy: " << numCorrect / this->vec.size() << endl; 
+}
 
 
