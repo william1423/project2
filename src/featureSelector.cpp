@@ -10,7 +10,7 @@
 using namespace std;
 
 void FeatureSelector::ForwardSelection () {
-    float globalAccuracy = largestClassSize / this->vec.size();
+    float globalAccuracy = largestClassSize / this->vec.size(); //validate with no features
     float localAccuracy;
     vector<int> optimalPath;
 
@@ -79,9 +79,15 @@ void FeatureSelector::ForwardSelection () {
 }
 
 void FeatureSelector::BackwardElimination () {
-    float globalAccuracy = largestClassSize / this->vec.size();
+    float globalAccuracy;
     float localAccuracy;
     vector<int> optimalPath;
+
+    for (int i = 0; i < this->remainingFeatures.size(); i++) {
+        this->path.push_back(i + 1);
+    }
+
+    globalAccuracy = this->Validate(); //validate with all features
 
     cout << endl;
     cout << "This dataset has " << this->remainingFeatures.size() << " features (not including the class attribute), ";
@@ -96,10 +102,6 @@ void FeatureSelector::BackwardElimination () {
     int position = 0;
     int pushPosition = 0;
     float cur;
-
-    for (int i = 0; i < this->remainingFeatures.size(); i++) {
-        this->path.push_back(i + 1);
-    }
 
     int removeIndex;
 
