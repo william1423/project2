@@ -30,7 +30,7 @@ void FeatureSelector::ForwardSelection () {
     list<int>::iterator it = this->remainingFeatures.begin();
     list<int>::iterator remove;
 
-    for(int i = 0; i < 3; i++) {// while (this->remainingFeatures.size()) {
+    while (this->remainingFeatures.size()) {
         it = this->remainingFeatures.begin();
         localAccuracy = 0;
 
@@ -42,7 +42,7 @@ void FeatureSelector::ForwardSelection () {
             for(int j = this->path.size() - 1; j >= 0; j--) {
                 cout  << ", " << this->path[j];
             }
-            cout <<  "} accuracy is " << cur << endl;
+            cout <<  "} accuracy is " << cur * 100 << "%" << endl;
 
             if (cur > localAccuracy) {
                 localAccuracy = cur;
@@ -65,7 +65,7 @@ void FeatureSelector::ForwardSelection () {
             cout  << this->path[j] << ", ";
         }
         cout << this->path[0];
-        cout << "} was best, accuracy is " << localAccuracy;
+        cout << "} was best, accuracy is " << localAccuracy * 100 << "%";
         if (localAccuracy < globalAccuracy) {
             cout << " (Warning: Accuracy has decreased) from overall best set";
         }
@@ -75,7 +75,7 @@ void FeatureSelector::ForwardSelection () {
     for(int i = optimalPath.size() - 1; i > 0; i--) {
             cout  << optimalPath[i] << ", ";
         }
-    cout << optimalPath[0] << "}, which has an accuracy of " << globalAccuracy << endl;   
+    cout << optimalPath[0] << "}, which has an accuracy of " << globalAccuracy * 100 << "%" << endl;   
 }
 
 void FeatureSelector::BackwardElimination () {
@@ -105,19 +105,26 @@ void FeatureSelector::BackwardElimination () {
 
     int removeIndex;
 
-    while (this->path.size()) {
+    while (this->path.size() - 1) {
         localAccuracy = 0;
         
         for(int j = 0; j < this->path.size(); j++) {
             this->removedFeature = this->path[j];
             cur = this->Validate();
 
-            cout << "   Using feature(s) {";
+            vector<int> toPrint;
+
             for(int k = 0; k < this->path.size(); k++) {
                 if (this->path[k] != this->removedFeature) {
-                    cout  << ", " << this->path[k];
+                    toPrint.push_back(this->path[k]);
                 }
             }
+
+            cout << "   Using feature(s) {";
+            for(int k = 0; k < toPrint.size(); k++) {
+                cout << toPrint[k] << ((k == toPrint.size() - 1) ? "" : ", ");
+            }
+
             cout <<  "} accuracy is " << cur << endl;
 
             if (cur > localAccuracy) {
@@ -145,19 +152,38 @@ void FeatureSelector::BackwardElimination () {
         }
         cout << endl << endl;
     }
+
+    localAccuracy = largestClassSize / this->vec.size(); // testing no features
+    cout << "Feature set {} accuracy is " << localAccuracy;
+    if (localAccuracy <= globalAccuracy) {
+        cout << " (Warning: Accuracy has decreased) from overall best set";
+    }
+    else {
+        globalAccuracy = localAccuracy;
+        optimalPath = {};
+    }
+    cout << endl << endl; 
+
     cout << "Finished Search!! The best feature subset is {";
     for(int i = optimalPath.size() - 1; i > 0; i--) {
-            cout  << optimalPath[i] << ", ";
-        }
-    cout << optimalPath[0] << "}, which has an accuracy of " << globalAccuracy << endl; 
+        cout  << optimalPath[i] << ", ";
+    }
+
+    if (optimalPath.size() > 0) {
+        cout << optimalPath[0];
+    }
+    cout << "}, which has an accuracy of " << globalAccuracy << endl; 
 }
 
 void FeatureSelector::Start(){
+    cout << "Welcome to William Huang's Feature Selection Algorithm" << endl;
+    
     string input;
     cout << "Enter filepath: ";
     cin >> input;
     cin.ignore();
     input = "../" + input;
+    cout << endl;
 
     this->Train(input);
     for (int i = 1; i <= this->vec[0].getVectorSize(); i++) {
@@ -183,7 +209,21 @@ void FeatureSelector::Start(){
         this->largestClassSize = class2Count;
     }
 
-    this->BackwardElimination();
+    cout << "Type the number of the algorithm you want to run" << endl << endl;
+    cout << "   1. Forward Selection" << endl;
+    cout << "   2. Backward Elimination" << endl;
+
+    int algo;
+    cin >> algo;
+    cin.ignore();
+    cout << endl;
+
+    if (algo == 1) {
+        this->ForwardSelection();
+    }
+    else if (algo == 2) {
+        this->BackwardElimination();
+    }
 }
 
 void FeatureSelector::Train(string path) {
