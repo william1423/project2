@@ -10,12 +10,19 @@
 using namespace std;
 
 void FeatureSelector::ForwardSelection () {
-    float globalAccuracy = 0.5; //default starting eval is 50% just to make things smoother
+    float globalAccuracy = largestClassSize / this->vec.size();
     float localAccuracy;
     vector<int> optimalPath;
 
     cout << endl;
-    cout << "Beginning search. (accuracy of a set with no features is set at 50%)" << endl << endl;
+    cout << "This dataset has " << this->remainingFeatures.size() << " features (not including the class attribute), ";
+    cout << "with " << this->vec.size() << " instances" << endl << endl;
+
+    cout << "Running nearest neighbor with no features (defualt rate), using \"leaving-one-out\" evaluation, ";
+    cout << "I get an accuracy of " << globalAccuracy << endl << endl;
+    cout << "Beginning search." << endl << endl;
+
+    
 
     int position = 0;
     int pushPosition = 0;
@@ -23,18 +30,17 @@ void FeatureSelector::ForwardSelection () {
     list<int>::iterator it = this->remainingFeatures.begin();
     list<int>::iterator remove;
 
-    while (this->remainingFeatures.size()) {
+    for(int i = 0; i < 3; i++) {// while (this->remainingFeatures.size()) {
         it = this->remainingFeatures.begin();
         localAccuracy = 0;
 
         while (it != this->remainingFeatures.end()) {
-            //cur = randEval();
             this->newFeature = (*it);
             cur = this->Validate();
 
             cout << "   Using feature(s) {" << (*it);
-            for(int i = this->path.size() - 1; i >= 0; i--) {
-                cout  << ", " << this->path[i];
+            for(int j = this->path.size() - 1; j >= 0; j--) {
+                cout  << ", " << this->path[j];
             }
             cout <<  "} accuracy is " << cur << endl;
 
@@ -55,8 +61,8 @@ void FeatureSelector::ForwardSelection () {
 
         cout << endl;
         cout << "Feature set {";
-        for(int i = this->path.size() - 1; i > 0; i--) {
-            cout  << this->path[i] << ", ";
+        for(int j = this->path.size() - 1; j > 0; j--) {
+            cout  << this->path[j] << ", ";
         }
         cout << this->path[0];
         cout << "} was best, accuracy is " << localAccuracy;
@@ -72,6 +78,78 @@ void FeatureSelector::ForwardSelection () {
     cout << optimalPath[0] << "}, which has an accuracy of " << globalAccuracy << endl;   
 }
 
+void FeatureSelector::BackwardElimination () {
+    float globalAccuracy = largestClassSize / this->vec.size();
+    float localAccuracy;
+    vector<int> optimalPath;
+
+    cout << endl;
+    cout << "This dataset has " << this->remainingFeatures.size() << " features (not including the class attribute), ";
+    cout << "with " << this->vec.size() << " instances" << endl << endl;
+
+    cout << "Running nearest neighbor with no features (defualt rate), using \"leaving-one-out\" evaluation, ";
+    cout << "I get an accuracy of " << globalAccuracy << endl << endl;
+    cout << "Beginning search." << endl << endl;
+
+    
+
+    int position = 0;
+    int pushPosition = 0;
+    float cur;
+
+    for (int i = 0; i < this->remainingFeatures.size(); i++) {
+        this->path.push_back(i + 1);
+    }
+
+    int removeIndex;
+
+    while (this->path.size()) {
+        localAccuracy = 0;
+        
+        for(int j = 0; j < this->path.size(); j++) {
+            this->removedFeature = this->path[j];
+            cur = this->Validate();
+
+            cout << "   Using feature(s) {";
+            for(int k = 0; k < this->path.size(); k++) {
+                if (this->path[k] != this->removedFeature) {
+                    cout  << ", " << this->path[k];
+                }
+            }
+            cout <<  "} accuracy is " << cur << endl;
+
+            if (cur > localAccuracy) {
+                localAccuracy = cur;
+                removeIndex = j;
+            }
+        }
+
+        this->path.erase(this->path.begin() + removeIndex);
+
+        if (localAccuracy > globalAccuracy) {
+            globalAccuracy = localAccuracy;
+            optimalPath = this->path;
+        }
+
+        cout << endl;
+        cout << "Feature set {";
+        for(int j = this->path.size() - 1; j > 0; j--) {
+            cout  << this->path[j] << ", ";
+        }
+        cout << this->path[0];
+        cout << "} was best, accuracy is " << localAccuracy;
+        if (localAccuracy < globalAccuracy) {
+            cout << " (Warning: Accuracy has decreased) from overall best set";
+        }
+        cout << endl << endl;
+    }
+    cout << "Finished Search!! The best feature subset is {";
+    for(int i = optimalPath.size() - 1; i > 0; i--) {
+            cout  << optimalPath[i] << ", ";
+        }
+    cout << optimalPath[0] << "}, which has an accuracy of " << globalAccuracy << endl; 
+}
+
 void FeatureSelector::Start(){
     string input;
     cout << "Enter filepath: ";
@@ -83,8 +161,27 @@ void FeatureSelector::Start(){
     for (int i = 1; i <= this->vec[0].getVectorSize(); i++) {
         this->remainingFeatures.push_back(i);
     }
-    // this->NearestNeighborFeatures();
-    this->ForwardSelection();
+
+    int class1Count = 0;
+    int class2Count = 0;
+    for (int i = 0; i < this->vec.size(); i++) {
+        if (vec[i].getClassName() == 1) {
+            class1Count++;
+        }
+    }
+
+    class2Count = this->vec.size() - class1Count;
+
+    if (class1Count >= class2Count) {
+        this->largestClass = 2;
+        this->largestClassSize = class1Count;
+    }
+    else {
+        this->largestClass = 2;
+        this->largestClassSize = class2Count;
+    }
+
+    this->BackwardElimination();
 }
 
 void FeatureSelector::Train(string path) {
@@ -200,15 +297,18 @@ bool FeatureSelector::NearestNeighborFeatures() {
 
 float FeatureSelector::getEuclideanDistance(DataPoint input, DataPoint data) {
     float sum = 0;
-    // if (this->remainingFeatures.size() == 0) {
-    //     cout << "ERROR: no selected features";
-    //     return -1;
-    // }
-
+    int pathIndex;
     for (int i = 0; i < this->path.size(); i++) {
-        sum += pow((input.getFeatureVal(i) - data.getFeatureVal(i)), 2);
+        if (this->path[i] != removedFeature) {
+            pathIndex = this->path[i] - 1;
+            sum += pow((input.getFeatureVal(pathIndex) - data.getFeatureVal(pathIndex)), 2);
+        }
     }
-    sum += pow((input.getFeatureVal(this->newFeature) - data.getFeatureVal(this->newFeature)), 2);
+
+    if (newFeature != -1) {
+        sum += pow((input.getFeatureVal(this->newFeature - 1) - data.getFeatureVal(this->newFeature - 1)), 2);
+    }
+    
     return sqrt(sum);
 }
 

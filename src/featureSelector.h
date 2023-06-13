@@ -20,8 +20,14 @@ class FeatureSelector {
         float getEuclideanDistance(DataPoint input, DataPoint data);
         float Validate();
         void ForwardSelection();
+        void BackwardElimination();
 
-        int newFeature;
+        int newFeature = -1;
+        int removedFeature = -1;
+
+        int largestClass;
+        float largestClassSize;
+
 };
 
 #endif
