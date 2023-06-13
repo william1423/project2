@@ -30,6 +30,8 @@ void FeatureSelector::ForwardSelection () {
     list<int>::iterator it = this->remainingFeatures.begin();
     list<int>::iterator remove;
 
+    int decreaseCount = 0;
+
     while (this->remainingFeatures.size()) {
         it = this->remainingFeatures.begin();
         localAccuracy = 0;
@@ -58,6 +60,9 @@ void FeatureSelector::ForwardSelection () {
             globalAccuracy = localAccuracy;
             optimalPath = this->path;
         }
+        else {
+            decreaseCount++;
+        }
 
         cout << endl;
         cout << "Feature set {";
@@ -70,6 +75,11 @@ void FeatureSelector::ForwardSelection () {
             cout << " (Warning: Accuracy has decreased) from overall best set";
         }
         cout << endl << endl;
+
+        if(decreaseCount == 4) {
+            cout << "NOTE: Algorithm has exited after 3 continuous iterations without finding a better subset" << endl << endl;
+            break;
+        }
     }
     cout << "Finished Search!! The best feature subset is {";
     for(int i = optimalPath.size() - 1; i > 0; i--) {
@@ -105,6 +115,8 @@ void FeatureSelector::BackwardElimination () {
 
     int removeIndex;
 
+    int decreaseCount = 0;
+
     while (this->path.size() - 1) {
         localAccuracy = 0;
         
@@ -139,6 +151,9 @@ void FeatureSelector::BackwardElimination () {
             globalAccuracy = localAccuracy;
             optimalPath = this->path;
         }
+        else {
+            decreaseCount++;
+        }
 
         cout << endl;
         cout << "Feature set {";
@@ -151,19 +166,26 @@ void FeatureSelector::BackwardElimination () {
             cout << " (Warning: Accuracy has decreased) from overall best set";
         }
         cout << endl << endl;
+
+        if (decreaseCount == 4) {
+            cout << "NOTE: Algorithm has exited after 3 continuous iterations without finding a better subset" << endl << endl;
+            break;
+        }
     }
 
-    localAccuracy = largestClassSize / this->vec.size(); // testing no features
-    cout << "Feature set {} accuracy is " << localAccuracy;
-    if (localAccuracy <= globalAccuracy) {
-        cout << " (Warning: Accuracy has decreased) from overall best set";
+    if (decreaseCount < 4) {
+        localAccuracy = largestClassSize / this->vec.size(); // testing no features
+        cout << "Feature set {} accuracy is " << localAccuracy;
+        if (localAccuracy <= globalAccuracy) {
+            cout << " (Warning: Accuracy has decreased) from overall best set";
+        }
+        else {
+            globalAccuracy = localAccuracy;
+            optimalPath = {};
+        }
+        cout << endl << endl;
     }
-    else {
-        globalAccuracy = localAccuracy;
-        optimalPath = {};
-    }
-    cout << endl << endl; 
-
+     
     cout << "Finished Search!! The best feature subset is {";
     for(int i = optimalPath.size() - 1; i > 0; i--) {
         cout  << optimalPath[i] << ", ";

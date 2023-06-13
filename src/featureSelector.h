@@ -28,6 +28,8 @@ class FeatureSelector {
         int largestClass;
         float largestClassSize;
 
+        float preSqrtTotal = 0;
+
 };
 
 #endif
